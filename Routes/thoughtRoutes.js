@@ -24,7 +24,7 @@ router.get("/api/thoughts/:id", async (req, res) => {
 });
 router.post("/api/thoughts", async (req, res) => {
     try {
-        const user = await User.findById(req.body.userId);
+        const user = await User.findOne({username:req.body.username});
         if (!user) {
             return res.status(404).json({ message: "No user with that ID" });
         }
@@ -74,13 +74,12 @@ router.post("/api/thoughts/:thoughtId/reactions", async (req, res) => {
 });
 router.delete("/api/thoughts/:thoughtId/reactions/:reactionId", async (req, res) => {
     try {
-        const thought = await Thoughthought.findById(req.params.thoughtId);
+        const thought = await Thought.findById(req.params.thoughtId);
         if (!thought) {
             return res.status(404).json({ message: "No thought with that ID" });
         }
-        thought.reactions.pull(req.params.reactionId);
-        await thought.save();
-        res.status(200).json(thought);
+        const updatedThought = await Thought.findByIdAndUpdate(req.params.thoughtId, { $pull: { reactions: { reactionId: req.params.reactionId } } }, { new: true });
+        res.status(200).json(updatedThought);
     } catch (err) {
         res.status(500).json(err);   
     } 
